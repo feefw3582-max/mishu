@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Raymond待办图标">
+  <rect width="512" height="512" rx="112" fill="#ffb000"/>
+  <path d="M86 358c72-128 112-192 170-192s98 64 170 192" fill="none" stroke="#16130e" stroke-width="34" stroke-linecap="round"/>
+  <circle cx="176" cy="176" r="38" fill="#16130e"/>
+  <circle cx="336" cy="176" r="38" fill="#16130e"/>
+  <path d="M134 328h244" stroke="#16130e" stroke-width="34" stroke-linecap="round"/>
+  <path d="M156 402h200" stroke="#fff9ea" stroke-width="28" stroke-linecap="round"/>
+</svg>
