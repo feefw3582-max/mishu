@@ -1,6 +1,8 @@
 const STORAGE_KEYS = {
   tasks: "raymond-plan-task-state",
   review: "raymond-plan-review-state",
+  dailyKpis: "raymond-plan-daily-kpi-state",
+  weeklyKpis: "raymond-plan-weekly-kpi-state",
 };
 
 const priorityMeta = {
@@ -499,6 +501,177 @@ const timelineItems = [
   ["00:00-00:30", "睡前收尾", "复盘、明日计划、放松入睡", ["P0", "00:30睡觉"]],
 ];
 
+const dailyKpis = [
+  {
+    priority: "p0",
+    title: "P0 底线",
+    summary: "健康、实习、学校安全线不能出问题。",
+    items: [
+      {
+        id: "sleep",
+        title: "睡眠硬约束",
+        target: "00:30-07:30睡满7小时；00:00后不复杂开发、不深度Debug。",
+        window: "00:00-07:30",
+      },
+      {
+        id: "internship",
+        title: "实习基本事务",
+        target: "必要消息回复、当天必须事务完成，不影响本职工作。",
+        window: "10:00-19:30",
+      },
+      {
+        id: "school-safety",
+        title: "学校安全检查",
+        target: "检查作业、DDL、课程汇报、考试、小组任务和挂科风险。",
+        window: "18:30-19:00",
+      },
+    ],
+  },
+  {
+    priority: "p1",
+    title: "P1 今日核心",
+    summary: "直接服务5月MVP、求职、英语的硬产出。",
+    items: [
+      {
+        id: "english-vocab",
+        title: "英语词汇",
+        target: "新词100个；复习300-350个；错词做标记。",
+        window: "08:00-10:00 + 19:30-20:15",
+      },
+      {
+        id: "agent-dev",
+        title: "Agent开发",
+        target: "5月3-4小时；一个模块进入可运行、可测试或问题明确。",
+        window: "10:30-12:00 + 14:00-15:30 + 21:30-22:30",
+      },
+      {
+        id: "job-review",
+        title: "求职复盘",
+        target: "新增1张面试卡片；优化1段项目表达；记录1个产品案例。",
+        window: "13:00-14:00",
+      },
+    ],
+  },
+  {
+    priority: "p2",
+    title: "P2 持续积累",
+    summary: "不抢主线，但每天都要有沉淀。",
+    items: [
+      {
+        id: "theory-337",
+        title: "337理论课",
+        target: "5月1小时；输出3个核心概念和1个可能考题。",
+        window: "15:30-16:30 / 22:30-23:20",
+      },
+      {
+        id: "industry-reading",
+        title: "行业阅读",
+        target: "记录1条产品、AI或互联网洞察。",
+        window: "09:30-10:00 / 12:30-13:00",
+      },
+      {
+        id: "portfolio-doc",
+        title: "项目文档/作品集",
+        target: "沉淀1段README、Demo脚本、简历描述或作品集文案。",
+        window: "16:30-17:30",
+      },
+    ],
+  },
+  {
+    priority: "p3",
+    title: "P3 限时低频",
+    summary: "防止焦虑型动作挤掉真正产出。",
+    items: [
+      {
+        id: "applications",
+        title: "投递/刷岗位/改简历",
+        target: "只在投递日执行，30分钟封顶。",
+        window: "午间/上班碎片",
+      },
+      {
+        id: "anti-friction",
+        title: "防内耗检查",
+        target: "不刷短视频；不无限查资料；不临时推翻计划。",
+        window: "全天",
+      },
+    ],
+  },
+];
+
+const weeklyKpis = [
+  {
+    priority: "p0",
+    title: "P0 周底线",
+    summary: "一周内不能爆掉健康、实习、学校。",
+    items: [
+      {
+        id: "weekly-sleep",
+        title: "睡眠纪律",
+        target: "本周至少6天00:30前入睡；无连续两天熬夜。",
+      },
+      {
+        id: "weekly-school",
+        title: "学校安全线",
+        target: "本周作业、DDL、考试、小组任务全部检查并处理。",
+      },
+      {
+        id: "weekly-internship",
+        title: "实习事务",
+        target: "本周实习基本事务无拖延、无遗漏、无敏感资料混用。",
+      },
+    ],
+  },
+  {
+    priority: "p1",
+    title: "P1 周主线",
+    summary: "每周必须能看到Agent、英语、求职推进。",
+    items: [
+      {
+        id: "weekly-agent",
+        title: "Agent周交付",
+        target: "至少完成1个可演示模块，或修到一个Demo可稳定跑。",
+      },
+      {
+        id: "weekly-english",
+        title: "英语周进度",
+        target: "5月目标：新词500-700个；复习不低于1000个；错词回看。",
+      },
+      {
+        id: "weekly-job",
+        title: "求职周资产",
+        target: "新增5张以上面试卡片；完成1轮项目表达打磨或模拟复述。",
+      },
+    ],
+  },
+  {
+    priority: "p2",
+    title: "P2 周积累",
+    summary: "337、行业、作品集、手绘持续推进。",
+    items: [
+      {
+        id: "weekly-337",
+        title: "337理论周进度",
+        target: "5月每周至少5小时；6月至少8-10小时；形成可复述笔记。",
+      },
+      {
+        id: "weekly-portfolio",
+        title: "作品集/README",
+        target: "至少更新1页作品集或1份README关键段落。",
+      },
+      {
+        id: "weekly-marker",
+        title: "马克笔/手绘",
+        target: "5月每周至少1次；6月提高到每周2次。",
+      },
+      {
+        id: "weekly-industry",
+        title: "行业洞察",
+        target: "累计记录5条可用于面试的产品/AI/互联网洞察。",
+      },
+    ],
+  },
+];
+
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
 
@@ -512,6 +685,28 @@ function formatDate(date) {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+function parseDate(dateString) {
+  const [year, month, day] = dateString.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function getWeekRange(dateString) {
+  const date = parseDate(dateString);
+  const day = date.getDay() || 7;
+  const monday = new Date(date);
+  monday.setDate(date.getDate() - day + 1);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  return {
+    start: formatDate(monday),
+    end: formatDate(sunday),
+    label: `${String(monday.getMonth() + 1).padStart(2, "0")}/${String(monday.getDate()).padStart(
+      2,
+      "0"
+    )}-${String(sunday.getMonth() + 1).padStart(2, "0")}/${String(sunday.getDate()).padStart(2, "0")}`,
+  };
 }
 
 function getDefaultDate() {
@@ -623,6 +818,38 @@ function setTaskState(id, done) {
   state[id] = done;
   saveTasks(state);
   renderMetrics();
+}
+
+function getScopedState(storageKey, scopeKey) {
+  try {
+    const state = JSON.parse(localStorage.getItem(storageKey)) || {};
+    return state[scopeKey] || {};
+  } catch {
+    return {};
+  }
+}
+
+function setScopedState(storageKey, scopeKey, itemId, done) {
+  let state = {};
+  try {
+    state = JSON.parse(localStorage.getItem(storageKey)) || {};
+  } catch {
+    state = {};
+  }
+  state[scopeKey] = state[scopeKey] || {};
+  state[scopeKey][itemId] = done;
+  localStorage.setItem(storageKey, JSON.stringify(state));
+}
+
+function clearScopedState(storageKey, scopeKey) {
+  let state = {};
+  try {
+    state = JSON.parse(localStorage.getItem(storageKey)) || {};
+  } catch {
+    state = {};
+  }
+  delete state[scopeKey];
+  localStorage.setItem(storageKey, JSON.stringify(state));
 }
 
 function getAllTaskIds() {
@@ -784,6 +1011,124 @@ function renderMetrics() {
   $("#nextDeadline").textContent = next ? next.title : "全部完成";
 }
 
+function getKpiTotals(groups, state) {
+  const items = groups.flatMap((group) =>
+    group.items.map((item) => ({ ...item, priority: group.priority }))
+  );
+  const done = items.filter((item) => state[item.id]).length;
+  const total = items.length;
+  const open = total - done;
+  const progress = total ? Math.round((done / total) * 100) : 0;
+  return { items, done, open, total, progress };
+}
+
+function renderKpiGroups(groups, state, kind) {
+  return groups
+    .map(
+      (group) => `
+        <article class="kpi-column">
+          <div class="kpi-column-head ${group.priority}">
+            <h3>${group.title}</h3>
+            <p>${group.summary}</p>
+          </div>
+          ${group.items
+            .map((item) => {
+              const checked = Boolean(state[item.id]);
+              const windowText = item.window ? `<span class="kpi-meta">时间窗：${item.window}</span>` : "";
+              return `
+                <label class="kpi-item ${checked ? "done" : ""}">
+                  <input type="checkbox" data-kpi-kind="${kind}" data-kpi-id="${item.id}" ${
+                    checked ? "checked" : ""
+                  } />
+                  <span>
+                    <strong>${item.title}</strong>
+                    <small>${item.target}</small>
+                    ${windowText}
+                  </span>
+                </label>
+              `;
+            })
+            .join("")}
+        </article>
+      `
+    )
+    .join("");
+}
+
+function renderDailyKpis() {
+  const input = $("#dailyDateInput");
+  if (!input) return;
+
+  const date = input.value || getDefaultDate();
+  input.value = date;
+
+  const state = getScopedState(STORAGE_KEYS.dailyKpis, date);
+  const totals = getKpiTotals(dailyKpis, state);
+  const p0Open = totals.items.filter((item) => item.priority === "p0" && !state[item.id]).length;
+
+  $("#dailyProgress").textContent = `${totals.progress}%`;
+  $("#dailyDone").textContent = totals.done;
+  $("#dailyOpen").textContent = totals.open;
+  $("#dailyP0Open").textContent = p0Open;
+  $("#dailyKpiBoard").innerHTML = renderKpiGroups(dailyKpis, state, "daily");
+}
+
+function renderWeeklyKpis() {
+  const input = $("#weeklyDateInput");
+  if (!input) return;
+
+  const date = input.value || getDefaultDate();
+  input.value = date;
+  const range = getWeekRange(date);
+  const state = getScopedState(STORAGE_KEYS.weeklyKpis, range.start);
+  const totals = getKpiTotals(weeklyKpis, state);
+
+  $("#weeklyProgress").textContent = `${totals.progress}%`;
+  $("#weeklyDone").textContent = totals.done;
+  $("#weeklyOpen").textContent = totals.open;
+  $("#weeklyRange").textContent = range.label;
+  $("#weeklyKpiBoard").innerHTML = renderKpiGroups(weeklyKpis, state, "weekly");
+}
+
+function bindKpiControls() {
+  $("#dailyDateInput").addEventListener("change", renderDailyKpis);
+  $("#weeklyDateInput").addEventListener("change", renderWeeklyKpis);
+
+  $("#resetDailyButton").addEventListener("click", () => {
+    const date = $("#dailyDateInput").value || getDefaultDate();
+    clearScopedState(STORAGE_KEYS.dailyKpis, date);
+    renderDailyKpis();
+  });
+
+  $("#resetWeeklyButton").addEventListener("click", () => {
+    const date = $("#weeklyDateInput").value || getDefaultDate();
+    clearScopedState(STORAGE_KEYS.weeklyKpis, getWeekRange(date).start);
+    renderWeeklyKpis();
+  });
+}
+
+function bindKpiEvents() {
+  document.addEventListener("change", (event) => {
+    const checkbox = event.target.closest("[data-kpi-kind]");
+    if (!checkbox) return;
+
+    const kind = checkbox.dataset.kpiKind;
+    const itemId = checkbox.dataset.kpiId;
+    const storageKey = kind === "daily" ? STORAGE_KEYS.dailyKpis : STORAGE_KEYS.weeklyKpis;
+    const scopeKey =
+      kind === "daily"
+        ? $("#dailyDateInput").value || getDefaultDate()
+        : getWeekRange($("#weeklyDateInput").value || getDefaultDate()).start;
+
+    setScopedState(storageKey, scopeKey, itemId, checkbox.checked);
+    const item = checkbox.closest(".kpi-item");
+    if (item) item.classList.toggle("done", checkbox.checked);
+
+    if (kind === "daily") renderDailyKpis();
+    if (kind === "weekly") renderWeeklyKpis();
+  });
+}
+
 function bindTaskEvents() {
   document.addEventListener("change", (event) => {
     const checkbox = event.target.closest("[data-task-id]");
@@ -852,17 +1197,55 @@ function bindControls() {
   });
 }
 
+function setActivePage(page) {
+  const target = $(`[data-page="${page}"]`) ? page : "home";
+  $$(".page-view").forEach((view) => {
+    view.classList.toggle("active", view.dataset.page === target);
+  });
+  $$("[data-page-link]").forEach((link) => {
+    link.classList.toggle("active", link.dataset.pageLink === target);
+  });
+  document.body.dataset.page = target;
+  window.scrollTo(0, 0);
+}
+
+function getPageFromHash() {
+  return (window.location.hash || "#home").replace("#", "") || "home";
+}
+
+function bindPageNavigation() {
+  document.addEventListener("click", (event) => {
+    const link = event.target.closest("[data-page-link]");
+    if (!link) return;
+    event.preventDefault();
+    const page = link.dataset.pageLink;
+    history.pushState(null, "", `#${page}`);
+    setActivePage(page);
+  });
+
+  window.addEventListener("popstate", () => setActivePage(getPageFromHash()));
+  window.addEventListener("hashchange", () => setActivePage(getPageFromHash()));
+}
+
 function init() {
   $("#dateInput").value = getDefaultDate();
+  $("#dailyDateInput").value = getDefaultDate();
+  $("#weeklyDateInput").value = getDefaultDate();
   renderMilestones();
   renderAgents();
   renderTimeline();
+  renderDailyKpis();
+  renderWeeklyKpis();
   renderMetrics();
   bindTaskEvents();
+  bindKpiEvents();
   bindReview();
+  bindKpiControls();
   bindControls();
+  bindPageNavigation();
   fillNow();
   renderDecision();
+  setActivePage(getPageFromHash());
 }
 
 init();
