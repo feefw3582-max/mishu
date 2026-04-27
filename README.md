@@ -8,7 +8,17 @@
 - 阶段看板：覆盖 5月10日、5月31日、6月7日、6月30日、7-12月节点。
 - Agent 看板：拆解音乐生成、压力疏导、专注力恢复三个 Agent 的 MVP 与作品集表达。
 - 本地持久化：勾选状态和复盘内容保存在浏览器 `localStorage`。
+- PWA：支持添加到 iPhone 主屏幕、离线缓存和网页通知权限申请。
 - 零依赖：只有 `index.html`、`styles.css`、`app.js`，可直接用 GitHub Pages 部署。
+
+## iPhone 提醒说明
+
+1. 用 iPhone Safari 打开 GitHub Pages 地址。
+2. 点击分享按钮，选择“添加到主屏幕”。
+3. 从主屏幕打开“Raymond待办”。
+4. 点击页面里的“开启时间提醒”，允许通知。
+
+纯前端 GitHub Pages 可以在网页APP打开或后台短时间存活时触发时间块提醒；如果要在网页APP完全关闭后也准点推送，需要增加服务端 Web Push 调度器。
 
 ## 本地打开
 
@@ -24,4 +34,3 @@ python -m http.server 8080
 
 - Branch: `main`
 - Folder: `/`
-
