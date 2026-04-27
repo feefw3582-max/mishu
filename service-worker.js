@@ -1,4 +1,4 @@
-const CACHE_NAME = "raymond-plan-pwa-v2";
+const CACHE_NAME = "raymond-plan-pwa-v3";
 const CORE_ASSETS = [
   "./",
   "./index.html",
