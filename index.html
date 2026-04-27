@@ -18,34 +18,31 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <div class="shell">
-      <header class="site-header">
-        <nav class="topbar" aria-label="页面导航">
-          <a href="#home" data-page-link="home">首页</a>
-          <a href="#decision" data-page-link="decision">现在要做啥</a>
-          <a href="#daily" data-page-link="daily">每日KPI</a>
-          <a href="#weekly" data-page-link="weekly">每周KPI</a>
-          <a href="#rhythm" data-page-link="rhythm">作息</a>
-          <a href="#board" data-page-link="board">阶段OKR</a>
-          <a href="#agents" data-page-link="agents">Agent交付</a>
-          <a href="#reminders" data-page-link="reminders">iPhone提醒</a>
-          <a href="#review" data-page-link="review">复盘</a>
-        </nav>
+    <div class="app-shell">
+      <header class="app-header">
+        <div class="profile-chip">
+          <div class="avatar" aria-hidden="true">R</div>
+          <div>
+            <strong>Raymond</strong>
+            <span><i></i>执行在线</span>
+          </div>
+        </div>
+        <button class="quick-add" type="button" data-page-link="review" aria-label="打开复盘">+</button>
       </header>
 
-      <main>
+      <main class="app-main">
         <section class="page-view page-home" id="home" data-page="home">
           <div class="hero-grid">
             <section class="hero-copy">
               <p class="eyebrow">2026.05-12 / 健康作息版 / 工作时间开发版</p>
               <h1>raymond现在要做啥</h1>
               <p class="hero-lede">
-                当 Raymond 卡住时，只做一件事：输入现在的时间点。系统会按 P0-P3 给出当前该做的事、目标、完成时间，并把每日KPI、每周KPI、阶段OKR拆成独立看板。
+                当 Raymond 卡住时，只做一件事：输入现在的时间点。系统会按 P0-P3 给出当前该做的事、目标、完成时间，并把工作日OKR、每周OKR、阶段OKR拆成独立看板。
               </p>
               <div class="hero-actions">
                 <a class="button primary" href="#decision" data-page-link="decision">输入时间</a>
-                <a class="button ghost" href="#daily" data-page-link="daily">看今日KPI</a>
-                <a class="button secondary" href="#weekly" data-page-link="weekly">看本周KPI</a>
+                <a class="button ghost" href="#daily" data-page-link="daily">看今日OKR</a>
+                <a class="button secondary" href="#weekly" data-page-link="weekly">看本周OKR</a>
               </div>
             </section>
             <aside class="mission-card" aria-label="核心目标">
@@ -110,9 +107,9 @@
         <section class="panel page-view kpi-panel" id="daily" data-page="daily">
           <div class="section-heading split-heading">
             <div>
-              <p class="eyebrow">Daily KPI Board</p>
-              <h2>每日任务KPI看板</h2>
-              <p>这个看板盯每天有没有真正执行，不只看阶段OKR。勾选状态按日期保存。</p>
+              <p class="eyebrow">Workday OKR Board</p>
+              <h2>工作日OKR确认看板</h2>
+              <p>这个看板用来每天打钩确认：哪些今日完成，哪些还没完成。勾选状态按日期保存。</p>
             </div>
             <div class="kpi-controls">
               <label>
@@ -146,9 +143,9 @@
         <section class="panel page-view kpi-panel" id="weekly" data-page="weekly">
           <div class="section-heading split-heading">
             <div>
-              <p class="eyebrow">Weekly KPI Board</p>
-              <h2>每周任务KPI看板</h2>
-              <p>按周检查节奏：英语、337、Agent、求职、学校安全线都要有可验收产出。</p>
+              <p class="eyebrow">Weekly OKR Board</p>
+              <h2>每周OKR确认看板</h2>
+              <p>按周打钩确认完成和未完成：英语、337、Agent、求职、学校安全线都要有可验收产出。</p>
             </div>
             <div class="kpi-controls">
               <label>
@@ -230,6 +227,36 @@
           <div class="timeline" id="timeline"></div>
         </section>
 
+        <section class="panel page-view more-panel" id="more" data-page="more">
+          <div class="section-heading">
+            <p class="eyebrow">More</p>
+            <h2>我的工作台</h2>
+            <p>这里放不需要常驻底部的二级页面，避免底部导航变成网站菜单。</p>
+          </div>
+          <div class="more-grid">
+            <a class="more-card" href="#agents" data-page-link="agents">
+              <span>Agent</span>
+              <strong>三个Agent交付看板</strong>
+              <small>产品、工程、求职交付确认</small>
+            </a>
+            <a class="more-card" href="#rhythm" data-page-link="rhythm">
+              <span>作息</span>
+              <strong>工作日固定时间结构</strong>
+              <small>查看全天时间块和边界</small>
+            </a>
+            <a class="more-card" href="#reminders" data-page-link="reminders">
+              <span>PWA</span>
+              <strong>iPhone主屏和提醒</strong>
+              <small>安装、通知、测试提醒</small>
+            </a>
+            <a class="more-card" href="#review" data-page-link="review">
+              <span>复盘</span>
+              <strong>今日复盘模板</strong>
+              <small>记录完成、未完成和内耗</small>
+            </a>
+          </div>
+        </section>
+
         <section class="panel reminder-panel page-view" id="reminders" data-page="reminders">
           <div class="section-heading split-heading">
             <div>
@@ -294,6 +321,29 @@
           </div>
         </section>
       </main>
+
+      <nav class="bottom-tabbar" aria-label="底部导航">
+        <a href="#decision" data-page-link="decision">
+          <span class="tab-icon">⌁</span>
+          <span>现在</span>
+        </a>
+        <a href="#daily" data-page-link="daily">
+          <span class="tab-icon">✓</span>
+          <span>今日</span>
+        </a>
+        <a href="#weekly" data-page-link="weekly">
+          <span class="tab-icon">▦</span>
+          <span>本周</span>
+        </a>
+        <a href="#board" data-page-link="board">
+          <span class="tab-icon">◎</span>
+          <span>OKR</span>
+        </a>
+        <a href="#more" data-page-link="more">
+          <span class="tab-icon">•••</span>
+          <span>我的</span>
+        </a>
+      </nav>
     </div>
 
     <script src="./app.js"></script>
