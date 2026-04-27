@@ -8,6 +8,13 @@
       name="description"
       content="一个面向 Raymond 的 2026 年 5-12 月执行计划前端看板：输入当前时间，输出 P0-P3 行动、目标和完成时间。"
     />
+    <meta name="theme-color" content="#ffb000" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Raymond待办" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./icon.svg" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -15,6 +22,7 @@
       <header class="hero">
         <nav class="topbar" aria-label="页面导航">
           <a href="#decision">现在要做啥</a>
+          <a href="#reminders">iPhone提醒</a>
           <a href="#board">执行看板</a>
           <a href="#agents">Agent交付</a>
           <a href="#review">日复盘</a>
@@ -89,6 +97,41 @@
           </div>
 
           <div class="priority-grid" id="priorityGrid" aria-live="polite"></div>
+        </section>
+
+        <section class="panel reminder-panel" id="reminders">
+          <div class="section-heading split-heading">
+            <div>
+              <p class="eyebrow">PWA / iPhone Reminder</p>
+              <h2>装到iPhone主屏，并打开提醒</h2>
+              <p>
+                用 Safari 打开本站，点分享按钮，选择“添加到主屏幕”。之后从主屏幕图标打开，点下面按钮授权通知。纯前端提醒在网页APP打开或后台短时间存活时有效；如果要完全关闭后也准点推送，需要后续接一个 Web Push 服务端调度器。
+              </p>
+            </div>
+            <span class="status-pill" id="pwaStatus">检查中</span>
+          </div>
+
+          <div class="reminder-grid">
+            <article class="reminder-card">
+              <span class="card-kicker">安装步骤</span>
+              <ol class="setup-list">
+                <li>iPhone 用 Safari 打开线上地址。</li>
+                <li>点底部分享按钮，选择“添加到主屏幕”。</li>
+                <li>从主屏幕打开“Raymond待办”。</li>
+                <li>点“开启时间提醒”，允许通知。</li>
+              </ol>
+            </article>
+            <article class="reminder-card">
+              <span class="card-kicker">提醒控制</span>
+              <div class="reminder-actions">
+                <button class="button primary" type="button" id="enableReminderButton">开启时间提醒</button>
+                <button class="button secondary" type="button" id="testReminderButton">测试提醒</button>
+                <button class="button secondary" type="button" id="disableReminderButton">关闭前端提醒</button>
+              </div>
+              <p class="reminder-note" id="reminderStatus">提醒状态等待检查。</p>
+              <p class="reminder-note" id="nextReminderText">下一次提醒：未安排</p>
+            </article>
+          </div>
         </section>
 
         <section class="metrics-strip" aria-label="总览指标">
