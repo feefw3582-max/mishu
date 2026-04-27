@@ -1023,35 +1023,59 @@ function getKpiTotals(groups, state) {
 }
 
 function renderKpiGroups(groups, state, kind) {
+  const renderItems = (items, group) => {
+    if (!items.length) {
+      return `<div class="kpi-empty">${group.priority.toUpperCase()} 当前没有${kind === "daily" ? "今日" : "本周"}未完成项。</div>`;
+    }
+
+    return items
+      .map((item) => {
+        const checked = Boolean(state[item.id]);
+        const windowText = item.window ? `<span class="kpi-meta">时间窗：${item.window}</span>` : "";
+        return `
+          <label class="kpi-item ${checked ? "done" : ""}">
+            <input type="checkbox" data-kpi-kind="${kind}" data-kpi-id="${item.id}" ${
+              checked ? "checked" : ""
+            } />
+            <span>
+              <strong>${item.title}</strong>
+              <small>${item.target}</small>
+              ${windowText}
+            </span>
+          </label>
+        `;
+      })
+      .join("");
+  };
+
   return groups
-    .map(
-      (group) => `
+    .map((group) => {
+      const openItems = group.items.filter((item) => !state[item.id]);
+      const doneItems = group.items.filter((item) => state[item.id]);
+
+      return `
         <article class="kpi-column">
           <div class="kpi-column-head ${group.priority}">
             <h3>${group.title}</h3>
             <p>${group.summary}</p>
           </div>
-          ${group.items
-            .map((item) => {
-              const checked = Boolean(state[item.id]);
-              const windowText = item.window ? `<span class="kpi-meta">时间窗：${item.window}</span>` : "";
-              return `
-                <label class="kpi-item ${checked ? "done" : ""}">
-                  <input type="checkbox" data-kpi-kind="${kind}" data-kpi-id="${item.id}" ${
-                    checked ? "checked" : ""
-                  } />
-                  <span>
-                    <strong>${item.title}</strong>
-                    <small>${item.target}</small>
-                    ${windowText}
-                  </span>
-                </label>
-              `;
-            })
-            .join("")}
+          <section class="kpi-section">
+            <div class="kpi-section-title">
+              <span>待完成</span>
+              <span>${openItems.length}</span>
+            </div>
+            ${renderItems(openItems, group)}
+          </section>
+          <section class="kpi-section">
+            <div class="kpi-section-title">
+              <span>已完成</span>
+              <span>${doneItems.length}</span>
+            </div>
+            ${doneItems.length ? renderItems(doneItems, group) : `<div class="kpi-empty">完成后会自动移到这里，方便复盘。</div>`}
+          </section>
         </article>
-      `
-    )
+      `;
+    })
     .join("");
 }
 
@@ -1199,18 +1223,21 @@ function bindControls() {
 
 function setActivePage(page) {
   const target = $(`[data-page="${page}"]`) ? page : "home";
+  const navTarget = ["agents", "rhythm", "reminders", "review"].includes(target)
+    ? "more"
+    : target;
   $$(".page-view").forEach((view) => {
     view.classList.toggle("active", view.dataset.page === target);
   });
   $$("[data-page-link]").forEach((link) => {
-    link.classList.toggle("active", link.dataset.pageLink === target);
+    link.classList.toggle("active", link.dataset.pageLink === navTarget);
   });
   document.body.dataset.page = target;
   window.scrollTo(0, 0);
 }
 
 function getPageFromHash() {
-  return (window.location.hash || "#home").replace("#", "") || "home";
+  return (window.location.hash || "#decision").replace("#", "") || "decision";
 }
 
 function bindPageNavigation() {
