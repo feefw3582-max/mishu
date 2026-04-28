@@ -1277,9 +1277,14 @@ function init() {
 
 init();
 
-STORAGE_KEYS.reminders = "raymond-plan-reminders-enabled";
+STORAGE_KEYS.serverPush = "raymond-plan-server-push-state";
+STORAGE_KEYS.pushConfig = "raymond-plan-push-config";
 
-let reminderTimer = null;
+const SERVER_PUSH_CONFIG = {
+  endpoint: "",
+  vapidPublicKey: "",
+};
+
 let serviceWorkerRegistration = null;
 
 function isStandaloneApp() {
@@ -1298,9 +1303,12 @@ function getReminderElements() {
     pwaStatus: $("#pwaStatus"),
     reminderStatus: $("#reminderStatus"),
     nextReminderText: $("#nextReminderText"),
-    enableButton: $("#enableReminderButton"),
+    endpointInput: $("#pushEndpointInput"),
+    vapidInput: $("#pushVapidInput"),
+    saveConfigButton: $("#savePushConfigButton"),
+    subscribeButton: $("#subscribePushButton"),
     testButton: $("#testReminderButton"),
-    disableButton: $("#disableReminderButton"),
+    copyPlanButton: $("#copyPushPlanButton"),
   };
 }
 
@@ -1316,29 +1324,6 @@ function updateReminderStatus(message) {
   } else {
     pwaStatus.textContent = "建议先添加到主屏";
   }
-}
-
-function isReminderEnabled() {
-  return localStorage.getItem(STORAGE_KEYS.reminders) === "true";
-}
-
-function setReminderEnabled(enabled) {
-  localStorage.setItem(STORAGE_KEYS.reminders, String(enabled));
-}
-
-function getNextSlotStart(now = new Date()) {
-  const todayStart = new Date(now);
-  todayStart.setSeconds(0, 0);
-
-  const candidates = schedule.map((slot) => {
-    const [hours, minutes] = slot.start.split(":").map(Number);
-    const date = new Date(todayStart);
-    date.setHours(hours, minutes, 0, 0);
-    if (date <= now) date.setDate(date.getDate() + 1);
-    return { slot, date };
-  });
-
-  return candidates.sort((a, b) => a.date - b.date)[0];
 }
 
 function getReminderPayload(slot, date = new Date()) {
@@ -1391,42 +1376,47 @@ async function showReminder(payload) {
   return true;
 }
 
-function clearReminderTimer() {
-  if (reminderTimer) {
-    window.clearTimeout(reminderTimer);
-    reminderTimer = null;
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = window.atob(base64);
+  return Uint8Array.from([...rawData].map((char) => char.charCodeAt(0)));
+}
+
+function getServerPushConfig() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.pushConfig)) || {};
+    return {
+      endpoint: saved.endpoint || SERVER_PUSH_CONFIG.endpoint,
+      vapidPublicKey: saved.vapidPublicKey || SERVER_PUSH_CONFIG.vapidPublicKey,
+    };
+  } catch {
+    return SERVER_PUSH_CONFIG;
   }
 }
 
-function scheduleNextReminder() {
-  clearReminderTimer();
-
-  const { nextReminderText } = getReminderElements();
-  if (!isReminderEnabled() || !supportsNotifications() || Notification.permission !== "granted") {
-    if (nextReminderText) nextReminderText.textContent = "下一次提醒：未安排";
-    return;
-  }
-
-  const next = getNextSlotStart();
-  const delay = Math.max(1000, next.date.getTime() - Date.now());
-  const nextText = `${String(next.date.getMonth() + 1).padStart(2, "0")}-${String(
-    next.date.getDate()
-  ).padStart(2, "0")} ${String(next.date.getHours()).padStart(2, "0")}:${String(
-    next.date.getMinutes()
-  ).padStart(2, "0")} / ${next.slot.title}`;
-
-  if (nextReminderText) nextReminderText.textContent = `下一次提醒：${nextText}`;
-
-  reminderTimer = window.setTimeout(async () => {
-    await showReminder(getReminderPayload(next.slot, next.date));
-    scheduleNextReminder();
-  }, Math.min(delay, 2147483647));
+function loadPushConfigInputs() {
+  const { endpointInput, vapidInput } = getReminderElements();
+  const config = getServerPushConfig();
+  if (endpointInput) endpointInput.value = config.endpoint || "";
+  if (vapidInput) vapidInput.value = config.vapidPublicKey || "";
 }
 
-async function enableReminders() {
+function savePushConfig() {
+  const { endpointInput, vapidInput } = getReminderElements();
+  const endpoint = endpointInput ? endpointInput.value.trim() : "";
+  const vapidPublicKey = vapidInput ? vapidInput.value.trim() : "";
+  localStorage.setItem(STORAGE_KEYS.pushConfig, JSON.stringify({ endpoint, vapidPublicKey }));
+  updateReminderStatus(endpoint && vapidPublicKey
+    ? "服务端配置已保存。现在可以点“订阅服务端推送”。"
+    : "服务端配置已清空或不完整。未配置完整前不能准点提醒。"
+  );
+}
+
+async function ensureNotificationPermission() {
   if (!supportsNotifications()) {
     updateReminderStatus("当前浏览器不支持网页通知。iPhone 需要 iOS 16.4+，并从主屏幕打开网页APP。");
-    return;
+    return false;
   }
 
   await registerServiceWorker();
@@ -1437,55 +1427,96 @@ async function enableReminders() {
       : Notification.permission;
 
   if (permission !== "granted") {
-    setReminderEnabled(false);
     updateReminderStatus("通知未授权。请在 iPhone 设置里允许该网页APP通知后再试。");
-    return;
+    return false;
   }
 
-  setReminderEnabled(true);
-  updateReminderStatus("已开启前端时间提醒。保持网页APP打开或后台短时间存活时，会按时间块提醒。");
-  scheduleNextReminder();
+  return true;
 }
 
 async function testReminder() {
-  if (!supportsNotifications()) {
-    updateReminderStatus("当前浏览器不支持网页通知，无法测试。");
-    return;
-  }
-
-  if (Notification.permission !== "granted") {
-    await enableReminders();
-  }
-
-  if (Notification.permission !== "granted") return;
+  const allowed = await ensureNotificationPermission();
+  if (!allowed) return;
 
   const time = `${String(new Date().getHours()).padStart(2, "0")}:${String(
     new Date().getMinutes()
   ).padStart(2, "0")}`;
   const slot = findSlot(time);
   await showReminder(getReminderPayload(slot));
-  updateReminderStatus("测试提醒已发送。如果没看到，请检查系统通知权限和专注模式。");
+  updateReminderStatus("测试通知已发送。注意：这只证明通知权限可用，不代表纯前端能准点定时。");
 }
 
-function disableReminders() {
-  setReminderEnabled(false);
-  clearReminderTimer();
-  updateReminderStatus("已关闭前端时间提醒。浏览器通知权限不会被本页面撤销，可在系统设置中关闭。");
+async function subscribeServerPush() {
   const { nextReminderText } = getReminderElements();
-  if (nextReminderText) nextReminderText.textContent = "下一次提醒：未安排";
+  const config = getServerPushConfig();
+
+  if (!config.endpoint || !config.vapidPublicKey) {
+    updateReminderStatus("服务端推送还没配置。当前GitHub Pages版本不能准点提醒，只能测试通知权限。");
+    if (nextReminderText) nextReminderText.textContent = "准点提醒状态：未连接服务端。";
+    return;
+  }
+
+  if (!("PushManager" in window)) {
+    updateReminderStatus("当前浏览器不支持 PushManager，无法注册服务端推送。");
+    return;
+  }
+
+  const allowed = await ensureNotificationPermission();
+  if (!allowed) return;
+
+  const registration = await registerServiceWorker();
+  const subscription = await registration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlBase64ToUint8Array(config.vapidPublicKey),
+  });
+
+  const response = await fetch(`${config.endpoint.replace(/\/$/, "")}/subscriptions`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      subscription,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      plan: "raymond-2026-05-12",
+    }),
+  });
+
+  if (!response.ok) {
+    updateReminderStatus(`服务端订阅失败：HTTP ${response.status}`);
+    return;
+  }
+
+  localStorage.setItem(
+    STORAGE_KEYS.serverPush,
+    JSON.stringify({ subscribedAt: new Date().toISOString(), endpoint: config.endpoint })
+  );
+  updateReminderStatus("已订阅服务端Web Push。之后准点提醒由服务端发，不依赖iPhone后台存活。");
+  if (nextReminderText) nextReminderText.textContent = "准点提醒状态：已连接服务端。";
+}
+
+async function copyPushPlan() {
+  const text = [
+    "准点提醒必须使用服务端 Web Push。",
+    "前端职责：PWA安装、Notification授权、PushManager订阅。",
+    "服务端职责：保存subscription；用Cron按时间块发送push；过期订阅自动删除。",
+    "推荐部署：Cloudflare Worker + KV + Cron Triggers，或 Vercel Cron + Node web-push。",
+    "当前仓库已包含 service-worker.js 的 push 事件接收逻辑和 workers/cloudflare-push-worker.js 模板。",
+  ].join("\n");
+
+  try {
+    await navigator.clipboard.writeText(text);
+    updateReminderStatus("服务端方案已复制。下一步是部署Worker并把endpoint/VAPID公钥写回前端配置。");
+  } catch {
+    updateReminderStatus(text);
+  }
 }
 
 async function initPwa() {
-  const { enableButton, testButton, disableButton } = getReminderElements();
+  const { subscribeButton, testButton, copyPlanButton, saveConfigButton, nextReminderText } = getReminderElements();
 
   if ("serviceWorker" in navigator) {
     try {
       await registerServiceWorker();
-      updateReminderStatus(
-        isReminderEnabled()
-          ? "提醒已开启。正在根据当前时间安排下一次提醒。"
-          : "PWA 已就绪。先添加到主屏幕，再开启提醒。"
-      );
+      updateReminderStatus("PWA 已就绪。当前只做通知权限测试；准点提醒需要服务端Web Push。");
     } catch {
       updateReminderStatus("PWA 离线缓存注册失败，但网页主体仍可使用。");
     }
@@ -1493,18 +1524,18 @@ async function initPwa() {
     updateReminderStatus("当前浏览器不支持 Service Worker，不能作为完整 PWA 运行。");
   }
 
-  if (enableButton) enableButton.addEventListener("click", enableReminders);
   if (testButton) testButton.addEventListener("click", testReminder);
-  if (disableButton) disableButton.addEventListener("click", disableReminders);
+  if (subscribeButton) subscribeButton.addEventListener("click", subscribeServerPush);
+  if (copyPlanButton) copyPlanButton.addEventListener("click", copyPushPlan);
+  if (saveConfigButton) saveConfigButton.addEventListener("click", savePushConfig);
+  loadPushConfigInputs();
 
-  if (isReminderEnabled() && supportsNotifications() && Notification.permission === "granted") {
-    scheduleNextReminder();
+  if (nextReminderText) {
+    const state = JSON.parse(localStorage.getItem(STORAGE_KEYS.serverPush) || "null");
+    nextReminderText.textContent = state
+      ? `准点提醒状态：已记录服务端订阅 ${state.subscribedAt}`
+      : "准点提醒状态：未连接服务端。";
   }
-
-  document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) scheduleNextReminder();
-  });
-  window.addEventListener("pageshow", scheduleNextReminder);
 }
 
 initPwa();
