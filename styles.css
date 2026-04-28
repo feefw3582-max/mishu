@@ -1107,12 +1107,42 @@ textarea:focus {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  margin-top: 14px;
 }
 
 .reminder-note {
   margin: 16px 0 0;
   color: var(--muted);
   font-weight: 750;
+  line-height: 1.55;
+}
+
+.push-config {
+  display: grid;
+  gap: 10px;
+}
+
+.push-config textarea {
+  min-height: 86px;
+}
+
+.server-push-box {
+  border: 3px solid var(--line);
+  border-radius: 20px;
+  padding: 16px;
+  margin-top: 16px;
+  background: rgba(255, 92, 53, 0.12);
+}
+
+.server-push-box strong {
+  display: block;
+  font-size: 17px;
+}
+
+.server-push-box p {
+  margin: 8px 0 0;
+  color: #44382e;
+  font-weight: 800;
   line-height: 1.55;
 }
 
